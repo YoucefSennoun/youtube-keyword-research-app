@@ -91,7 +91,7 @@ def analyze_keywords():
         logging.error(traceback.format_exc())
         return jsonify({'error': f'An unexpected error occurred on the server.'}), 500
 
-if __name__ == "__main__":
-    # For development, debug=True is fine. For production, use a proper WSGI server like Gunicorn.
-    # Host '0.0.0.0' makes it accessible on your network, ensure firewall allows if needed.
+if __name__ == '__main__':
+    # For local development:
     app.run(host='0.0.0.0', port=5000, debug=True)
+# For production (Gunicorn will call 'app' directly)
