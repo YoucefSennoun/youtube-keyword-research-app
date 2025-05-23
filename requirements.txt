@@ -1,0 +1,8 @@
+Flask
+pandas
+google-api-python-client
+beautifulsoup4
+requests
+matplotlib
+seaborn
+gunicorn # Essential for production deployment of Flask apps
