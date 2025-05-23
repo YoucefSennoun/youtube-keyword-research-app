@@ -3,7 +3,7 @@
 ![image](https://github.com/user-attachments/assets/696ebf36-03e1-407c-90eb-251011ffb334)
 
 
-online : visit this link to use it online \[https://youtube-keyword-research-app.onrender.com\](https://youtube-keyword-research-app.onrender.com)
+online : visit this link to use it online \[https://youtube-keyword-research-app.onrender.com\]
 
 locally :
 
