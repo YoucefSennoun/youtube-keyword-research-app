@@ -22,7 +22,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 class YouTubeKeywordResearchTool:
-    DEFAULT_API_KEY = "AIzaSyCvHOl7FIlDBp3wWnm_AccbrqD4JRSdKv4" # Default, can be overridden
+    DEFAULT_API_KEY = os.environ.get('API_KEY', DEFAULT_API_KEY) # Default, can be overridden
 
     def __init__(self, api_key=None):
         """Initialize the YouTube Keyword Research Tool.
