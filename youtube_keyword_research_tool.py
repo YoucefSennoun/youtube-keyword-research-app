@@ -16,13 +16,17 @@ import matplotlib.pyplot as plt # Matplotlib can be an optional dependency
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import logging
 import html # For unescaping HTML entities if needed from titles
+import os # Import os for environment variables
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class YouTubeKeywordResearchTool:
-    DEFAULT_API_KEY = os.environ.get('API_KEY', DEFAULT_API_KEY) # Default, can be overridden
+    # Set a default API key here. This will be used if no API key is provided
+    # via the constructor or environment variable (handled in app.py).
+    # NEVER hardcode your actual production API key directly here if you can avoid it.
+    DEFAULT_API_KEY = "AIzaSyCvHOl7FIlDBp3wWnm_AccbrqD4JRSdKv4" 
 
     def __init__(self, api_key=None):
         """Initialize the YouTube Keyword Research Tool.
@@ -31,10 +35,11 @@ class YouTubeKeywordResearchTool:
             api_key (str, optional): YouTube Data API key. If not provided or initialization fails,
                                     the tool will rely on scraping methods.
         """
+        # Prioritize the API key passed during instantiation, otherwise use the default.
         self.api_key = api_key if api_key else self.DEFAULT_API_KEY
         self.youtube = None
         
-        if self.api_key:
+        if self.api_key and self.api_key != self.DEFAULT_API_KEY: # Only try to build if a non-default key is explicitly used
             try:
                 self.youtube = build('youtube', 'v3', developerKey=self.api_key)
                 logger.info("YouTube API client initialized successfully.")
@@ -44,8 +49,11 @@ class YouTubeKeywordResearchTool:
             except Exception as e:
                 logger.error(f"An unexpected error occurred initializing YouTube API client: {e}. Falling back to scraping methods.")
                 self.youtube = None # Ensure it's None
+        elif self.api_key == self.DEFAULT_API_KEY:
+            logger.warning("Using default API key or no key provided. Functionality may be limited or rely on scraping.")
+            self.youtube = None # Explicitly set to None if using placeholder key to force scraping
         else:
-            logger.info("No API key provided. Relying on scraping methods.")
+            logger.info("No valid API key provided. Relying on scraping methods.")
 
     def get_autocomplete_suggestions(self, keyword, max_suggestions=10):
         """Get keyword suggestions from YouTube's autocomplete.
@@ -113,7 +121,7 @@ class YouTubeKeywordResearchTool:
 
     def _estimate_search_volume_api(self, keyword):
         try:
-            search_response = self.youtube.search().list(
+            search_response = self.Youtube().list(
                 q=keyword,
                 part='id,snippet',
                 maxResults=10, # Analyze top 10 videos for volume estimation
@@ -284,7 +292,7 @@ class YouTubeKeywordResearchTool:
 
     def _estimate_competition_api(self, keyword):
         try:
-            search_response = self.youtube.search().list(
+            search_response = self.Youtube().list(
                 q=keyword,
                 part='id,snippet',
                 maxResults=20, # Analyze top 20 videos
@@ -668,9 +676,11 @@ class YouTubeKeywordResearchTool:
 
 # Example usage:
 if __name__ == "__main__":
-    # Uses default API_KEY from class or falls back to scraping if key is invalid/missing.
-    tool = YouTubeKeywordResearchTool() 
-    # To force scraping, initialize with: tool = YouTubeKeywordResearchTool(api_key=None)
+    # This part is for local testing and will still use the hardcoded default
+    # or the API key set via an environment variable if you run this file directly.
+    # For a production setup, the API_KEY should be sourced from app.py.
+    api_key_from_env = os.environ.get('API_KEY')
+    tool = YouTubeKeywordResearchTool(api_key=api_key_from_env) 
     
     seed_keyword = "ai content creation tools"
     print(f"Finding keyword opportunities for: '{seed_keyword}'")
