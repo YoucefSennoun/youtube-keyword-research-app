@@ -9,7 +9,7 @@ from googleapiclient.errors import HttpError
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(module)s - %(message)s')
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 
 # Initialize the tool
 tool = None
