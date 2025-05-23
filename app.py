@@ -20,7 +20,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 app = Flask(__name__)
 
 # Initialize the tool. Consider loading API_KEY from environment variable or config file.
-API_KEY = "AIzaSyCvHOl7FIlDBp3wWnm_AccbrqD4JRSdKv4"  # Replace with your API key or manage securely
+API_KEY = os.environ.get('API_KEY', DEFAULT_API_KEY)  # Replace with your API key or manage securely
 tool = None
 try:
     tool = youtube_keyword_research_tool.YouTubeKeywordResearchTool(api_key=API_KEY)
