@@ -1,3 +1,8 @@
+![image](https://github.com/user-attachments/assets/40cb2c82-0fab-4f21-a452-ed7b304c8a4e)
+
+![image](https://github.com/user-attachments/assets/696ebf36-03e1-407c-90eb-251011ffb334)
+
+
 YouTube Keyword Research App
 This guide provides comprehensive instructions on how to access and run the YouTube Keyword Research App, both as an online service and locally on your personal computer.
 
