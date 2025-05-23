@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTKeyFinder - YouTube Keyword Research Tool</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+        .search-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        .search-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .search-button:hover {
+            background-color: #4cae4c;
+        }
+        .options-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .options-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .options-label {
+            font-size: 14px;
+            color: #555;
+        }
+        .options-select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #337ab7;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        .loading-text {
+            color: #777;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .results-container {
+            display: none;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .results-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+        .results-export {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .results-export:hover {
+            background-color: #0056b3;
+        }
+        .results-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .stat-card {
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #777;
+            text-transform: uppercase;
+        }
+        .results-table-container {
+            overflow-x: auto;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .results-table th, .results-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .results-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .score-pill {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            color: white;
+        }
+        .excellent {
+            background-color: #28a745;
+        }
+        .good {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .average {
+            background-color: #17a2b8;
+        }
+        .poor {
+            background-color: #dc3545;
+        }
+        /* .chart-container styles can be added here if charting is implemented */
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .footer .container {
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-container">
+            <form class="search-form" id="searchForm">
+                <input type="text" class="search-input" id="searchInput" placeholder="Enter a seed keyword..." required>
+                <button type="submit" class="search-button">Find Keywords</button>
+            </form>
+            <div class="options-container">
+                <div class="options-group">
+                    <label class="options-label">Search Depth:</label>
+                    <select class="options-select" id="depthSelect">
+                        <option value="1">Low (faster)</option>
+                        <option value="2" selected>Medium</option>
+                        <option value="3">High (slower)</option>
+                    </select>
+                </div>
+                <div class="options-group">
+                    <label class="options-label">Max Results:</label>
+                    <select class="options-select" id="maxResultsSelect">
+                        <option value="10">10 keywords</option>
+                        <option value="20" selected>20 keywords</option>
+                        <option value="50">50 keywords</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading" id="loadingContainer">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Analyzing YouTube keywords...</div>
+        </div>
+
+        <div class="results-container" id="resultsContainer">
+            <div class="results-header">
+                <div class="results-title">Keyword Opportunities</div>
+                <button class="results-export" id="exportButton">Export Results</button>
+            </div>
+
+            <div class="results-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalKeywords">0</div>
+                    <div class="stat-label">Keywords Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="excellentOpportunities">0</div>
+                    <div class="stat-label">Excellent Opportunities</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="averageVolume">0</div>
+                    <div class="stat-label">Avg. Search Volume</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="lowCompetition">0</div>
+                    <div class="stat-label">Low Competition</div>
+                </div>
+            </div>
+
+            <div class="results-table-container">
+                <table class="results-table" id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Keyword</th>
+                            <th>Search Volume</th>
+                            <th>Competition</th>
+                            <th>Opportunity Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTableBody">
+                        </tbody>
+                </table>
+            </div>
+
+            <div class="chart-container" id="chartContainer">
+                </div>
+        </div>
+
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2025 YTKeyFinder - The YouTube Keyword Research Tool for Creators</p>
+        </div>
+    </footer>
+
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsTableBody = document.getElementById('resultsTableBody');
+        const totalKeywords = document.getElementById('totalKeywords');
+        const excellentOpportunities = document.getElementById('excellentOpportunities');
+        const averageVolume = document.getElementById('averageVolume');
+        const lowCompetition = document.getElementById('lowCompetition');
+        const depthSelect = document.getElementById('depthSelect');
+        const maxResultsSelect = document.getElementById('maxResultsSelect');
+        const exportButton = document.getElementById('exportButton'); // Added export button
+
+        searchForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const keyword = searchInput.value.trim();
+            if (!keyword) return;
+
+            const depth = depthSelect.value;
+            const maxResults = maxResultsSelect.value;
+
+            loadingContainer.style.display = 'block';
+            resultsContainer.style.display = 'none';
+
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ keyword: keyword, depth: depth, maxResults: maxResults })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Server error'); });
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingContainer.style.display = 'none';
+                resultsContainer.style.display = 'block';
+                processResults(data);
+            })
+            .catch(error => {
+                loadingContainer.style.display = 'none';
+                alert('An error occurred: ' + error.message);
+                console.error(error);
+            });
+        });
+
+        function processResults(data) {
+            resultsTableBody.innerHTML = '';
+
+            if (!Array.isArray(data)) {
+                console.error('Received non-array data for results:', data);
+                alert('Received invalid data format from server.');
+                totalKeywords.textContent = 0;
+                excellentOpportunities.textContent = 0;
+                averageVolume.textContent = 0;
+                lowCompetition.textContent = 0;
+                return;
+            }
+
+            const total = data.length;
+            const excellent = data.filter(item => item.opportunity_level === 'excellent').length;
+            const avgVolume = total > 0 ? Math.round(data.reduce((sum, item) => sum + (item.search_volume_est || 0), 0) / total) : 0;
+            const lowComp = data.filter(item => item.competition_level === 'low').length;
+
+            totalKeywords.textContent = total;
+            excellentOpportunities.textContent = excellent;
+            averageVolume.textContent = formatNumber(avgVolume);
+            lowCompetition.textContent = lowComp;
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const opportunityClass = item.opportunity_level ? String(item.opportunity_level).toLowerCase() : 'average'; // Default class if undefined
+
+                row.innerHTML = `
+                    <td>${item.keyword || 'N/A'}</td>
+                    <td>${(item.search_volume_est !== undefined && item.search_volume_est !== null) ? formatNumber(item.search_volume_est) + '/mo' : 'N/A'}</td>
+                    <td>${(item.competition_score !== undefined && item.competition_score !== null) ? item.competition_score + '/100' : 'N/A'}</td>
+                    <td><span class="score-pill ${opportunityClass}">${item.opportunity_score !== undefined && item.opportunity_score !== null ? item.opportunity_score : 'N/A'}</span></td>
+                `;
+                resultsTableBody.appendChild(row);
+            });
+        }
+
+        function formatNumber(num) {
+            return num !== undefined && num !== null ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '';
+        }
+
+        // Basic export to CSV functionality
+        exportButton.addEventListener('click', function() {
+            const table = document.getElementById('resultsTable');
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+
+            for (const row of rows) {
+                const cells = row.querySelectorAll('th, td');
+                const rowData = Array.from(cells).map(cell => {
+                    let cellText = cell.innerText;
+                    // Escape commas and quotes for CSV
+                    cellText = cellText.replace(/"/g, '""');
+                    if (cellText.includes(',') || cellText.includes('\n') || cellText.includes('"')) {
+                        cellText = `"${cellText}"`;
+                    }
+                    return cellText;
+                });
+                csv.push(rowData.join(','));
+            }
+
+            const csvFile = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+            const downloadLink = document.createElement('a');
+
+            downloadLink.href = URL.createObjectURL(csvFile);
+            downloadLink.download = 'keyword_results.csv';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        });
+
+        processResults([]); // Initialize with an empty table
+    </script>
+</body>
+</html>
